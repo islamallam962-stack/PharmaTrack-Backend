@@ -1,0 +1,42 @@
+<Solution>
+  <Folder Name="/services/" />
+  <Folder Name="/services/ApiGateway/">
+    <Project Path="services/ApiGateway/ApiGateway/ApiGateway.csproj" />
+  </Folder>
+  <Folder Name="/services/ExpiryTrackerService/">
+    <Project Path="services/ExpiryTrackerService/ExpiryTrackerService.Application/ExpiryTrackerService.Application.csproj" />
+    <Project Path="services/ExpiryTrackerService/ExpiryTrackerService.Domain/ExpiryTrackerService.Domain.csproj" />
+    <Project Path="services/ExpiryTrackerService/ExpiryTrackerService.Infrastructure/ExpiryTrackerService.Infrastructure.csproj" />
+    <Project Path="services/ExpiryTrackerService/ExpiryTrackerService.Worker/ExpiryTrackerService.Worker.csproj" />
+  </Folder>
+  <Folder Name="/services/IdentityService/">
+    <Project Path="services/IdentityService/IdentityService.API/IdentityService.API.csproj" />
+    <Project Path="services/IdentityService/IdentityService.Application/IdentityService.Application.csproj" />
+    <Project Path="services/IdentityService/IdentityService.Domain/IdentityService.Domain.csproj" />
+    <Project Path="services/IdentityService/IdentityService.Infrastructure/IdentityService.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/services/InventoryService/">
+    <Project Path="services/InventoryService/InventoryService.API/InventoryService.API.csproj" />
+    <Project Path="services/InventoryService/InventoryService.Application/InventoryService.Application.csproj" />
+    <Project Path="services/InventoryService/InventoryService.Domain/InventoryService.Domain.csproj" />
+    <Project Path="services/InventoryService/InventoryService.Infrastructure/InventoryService.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/services/MarketplaceService/">
+    <Project Path="services/MarketplaceService/MarketplaceService.API/MarketplaceService.API.csproj" />
+    <Project Path="services/MarketplaceService/MarketplaceService.Application/MarketplaceService.Application.csproj" />
+    <Project Path="services/MarketplaceService/MarketplaceService.Domain/MarketplaceService.Domain.csproj" />
+    <Project Path="services/MarketplaceService/MarketplaceService.Infrastructure/MarketplaceService.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/services/NotificationService/">
+    <Project Path="services/NotificationService/NotificationService.API/NotificationService.API.csproj" />
+    <Project Path="services/NotificationService/NotificationService.Application/NotificationService.Application.csproj" />
+    <Project Path="services/NotificationService/NotificationService.Domain/NotificationService.Domain.csproj" />
+    <Project Path="services/NotificationService/NotificationService.Infrastructure/NotificationService.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/services/PharmacyService/">
+    <Project Path="services/PharmacyService/PharmacyService.API/PharmacyService.API.csproj" />
+    <Project Path="services/PharmacyService/PharmacyService.Application/PharmacyService.Application.csproj" />
+    <Project Path="services/PharmacyService/PharmacyService.Domain/PharmacyService.Domain.csproj" />
+    <Project Path="services/PharmacyService/PharmacyService.Infrastructure/PharmacyService.Infrastructure.csproj" />
+  </Folder>
+</Solution>

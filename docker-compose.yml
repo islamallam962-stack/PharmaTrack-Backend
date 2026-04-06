@@ -1,0 +1,172 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: pharmatrack-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - pharmatrack-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  identity-service:
+    build:
+      context: ./services/IdentityService
+      dockerfile: Dockerfile
+    container_name: identity-service
+    environment:
+      - ConnectionStrings__IdentityDb=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "5001:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pharmatrack-network
+
+  pharmacy-service:
+    build:
+      context: ./services/PharmacyService
+      dockerfile: Dockerfile
+    container_name: pharmacy-service
+    environment:
+      - ConnectionStrings__PharmacyDb=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "5002:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pharmatrack-network
+
+  inventory-service:
+    build:
+      context: ./services/InventoryService
+      dockerfile: Dockerfile
+    container_name: inventory-service
+    environment:
+      - ConnectionStrings__InventoryDb=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "5003:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pharmatrack-network
+
+  notification-service:
+    build:
+      context: ./services/NotificationService
+      dockerfile: Dockerfile
+    container_name: notification-service
+    environment:
+      - ConnectionStrings__NotificationDb=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - SendGrid__ApiKey=${SENDGRID_API_KEY}
+      - Twilio__AccountSid=${TWILIO_ACCOUNT_SID}
+      - Twilio__AuthToken=${TWILIO_AUTH_TOKEN}
+      - Twilio__FromPhone=${TWILIO_FROM_PHONE}
+      - Firebase__CredentialPath=${FIREBASE_CREDENTIAL_PATH}
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "5004:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pharmatrack-network
+
+  expiry-tracker:
+    build:
+      context: ./services/ExpiryTrackerService
+      dockerfile: Dockerfile
+    container_name: expiry-tracker
+    environment:
+      - ConnectionStrings__ExpiryTrackerDb=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__InventoryDb=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Services__NotificationService=http://notification-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      notification-service:
+        condition: service_started
+    networks:
+      - pharmatrack-network
+
+  marketplace-service:
+    build:
+      context: ./services/MarketplaceService
+      dockerfile: Dockerfile
+    container_name: marketplace-service
+    environment:
+      - ConnectionStrings__MarketplaceDb=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "5005:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pharmatrack-network
+
+  api-gateway:
+    build:
+      context: ./services/ApiGateway/ApiGateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    environment:
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - ASPNETCORE_URLS=http://+:80
+      - ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address=http://identity-service
+      - ReverseProxy__Clusters__pharmacy-cluster__Destinations__destination1__Address=http://pharmacy-service
+      - ReverseProxy__Clusters__inventory-cluster__Destinations__destination1__Address=http://inventory-service
+      - ReverseProxy__Clusters__notification-cluster__Destinations__destination1__Address=http://notification-service
+      - ReverseProxy__Clusters__marketplace-cluster__Destinations__destination1__Address=http://marketplace-service
+    ports:
+      - "5000:80"
+    depends_on:
+      - identity-service
+      - pharmacy-service
+      - inventory-service
+      - notification-service
+      - marketplace-service
+    networks:
+      - pharmatrack-network
+
+volumes:
+  postgres-data:
+
+networks:
+  pharmatrack-network:
+    driver: bridge
